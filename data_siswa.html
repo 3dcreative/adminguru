@@ -12,13 +12,10 @@
         .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; align-items: center; justify-content: space-between; background: #e8f4f8; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; }
         select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; min-width: 150px; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        /* Perbaikan: Header Tabel di-center */
         th { background-color: #2c3e50; color: white; padding: 12px 10px; border: 1px solid #bdc3c7; text-align: center; font-size: 0.9em; }
         td { padding: 12px 10px; border: 1px solid #bdc3c7; text-align: left; font-size: 0.9em; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .btn-sm { padding: 8px 12px; font-size: 0.85em; width: auto; margin: 0; }
-        
-        /* Modal Form CSS */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background-color: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
@@ -33,16 +30,19 @@
             <div id="alert-datasiswa" class="alert-custom"></div>
 
             <div class="toolbar">
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <label>Pilih Kelas:</label>
-                    <select id="select-kelas" onchange="renderTabelSiswa()"></select>
-                    <button class="btn btn-sm btn-secondary" onclick="tambahKelasBaru()">+ Buat Kelas</button>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <select id="select-kelas" onchange="renderTabelSiswa()"></select>
+                        <button class="btn btn-sm btn-secondary" onclick="tambahKelasBaru()" title="Tambah Kelas Baru"><i class="fas fa-plus"></i></button>
+                        <button class="btn btn-sm btn-secondary" onclick="bukaModalEditKelas()" title="Edit Nama Kelas"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="bukaModalHapusKelas()" title="Hapus Kelas"><i class="fas fa-trash"></i></button>
+                    </div>
                 </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                 <button class="btn btn-sm btn-success" id="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
-                
                 <div style="display: flex; gap: 10px;">
                     <input type="file" id="file-excel" accept=".xlsx, .xls" style="display: none;" onchange="prosesImportExcel(event)">
                     <button class="btn btn-sm" style="background-color: #f39c12; color: white;" id="btn-import" onclick="document.getElementById('file-excel').click()">📥 Import Excel</button>
@@ -88,13 +88,23 @@
     <div class="modal" id="modal-kelas">
         <div class="modal-content">
             <h2 style="margin-top:0;">Tambah Kelas</h2>
-            <p style="color: #7f8c8d; font-size: 0.9em;">Masukkan nama kelas baru (Contoh: Kelas 1A atau Matematika VII)</p>
-            <div class="form-group">
-                <input type="text" id="input-nama-kelas" placeholder="Ketik nama kelas di sini..." style="width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px;">
-            </div>
+            <p style="color: #7f8c8d; font-size: 0.9em;">Masukkan nama kelas baru</p>
+            <div class="form-group"><input type="text" id="input-nama-kelas" placeholder="Contoh: Kelas 1A" style="width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px;"></div>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="tutupModalKelas()">Batal</button>
                 <button class="btn btn-success" style="flex: 1;" onclick="simpanKelasBaru()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-edit-kelas">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Edit Nama Kelas</h2>
+            <p style="color: #7f8c8d; font-size: 0.9em;">Nama baru akan diterapkan pada semua siswa di kelas ini.</p>
+            <div class="form-group"><input type="text" id="input-edit-kelas" style="width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px;"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="tutupModalEditKelas()">Batal</button>
+                <button class="btn btn-success" style="flex: 1;" id="btn-eksekusi-edit-kelas" onclick="eksekusiEditKelas()">Simpan Perubahan</button>
             </div>
         </div>
     </div>
@@ -108,6 +118,18 @@
             <div style="display:flex; gap:10px; justify-content: center;">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="tutupModalHapus()">Batal</button>
                 <button class="btn btn-danger" style="flex: 1;" onclick="eksekusiHapus()">Ya, Hapus!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-hapus-kelas">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 3em; color: #e74c3c; margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2 style="margin-top:0; color: #e74c3c;">Hapus Seluruh Kelas</h2>
+            <p style="margin-bottom: 20px;">Yakin ingin menghapus kelas <b id="teks-nama-kelas-hapus"></b>? <br><br><b>Semua data siswa di dalamnya akan ikut terhapus secara permanen!</b></p>
+            <div style="display:flex; gap:10px; justify-content: center;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="tutupModalHapusKelas()">Batal</button>
+                <button class="btn btn-danger" style="flex: 1;" id="btn-eksekusi-hapus-kelas" onclick="eksekusiHapusKelas()">Ya, Hapus Semua!</button>
             </div>
         </div>
     </div>
@@ -131,26 +153,20 @@
             else { btn.disabled = false; btn.innerHTML = textAwal; }
         }
 
-        // --- FETCH DARI GOOGLE SHEETS ---
         function muatDataDatabase() {
             document.getElementById('tabel-body').innerHTML = '<tr><td colspan="4" style="text-align:center;">Mengecek database... <span class="spinner" style="border-top-color:#3498db;"></span></td></tr>';
-            
             fetch(APPS_SCRIPT_URL, { 
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                 body: `action=get_data_siswa&url=${encodeURIComponent(userAktif.url)}` 
-            })
-            .then(r => r.json()).then(res => {
-                if(res.status === 'success') {
-                    semuaSiswa = res.data;
-                    ekstrakKelas();
-                } else showAlert('error', 'Gagal memuat data!', 'alert-datasiswa');
+            }).then(r => r.json()).then(res => {
+                if(res.status === 'success') { semuaSiswa = res.data; ekstrakKelas(); } 
+                else showAlert('error', 'Gagal memuat data!', 'alert-datasiswa');
             });
         }
 
         function ekstrakKelas() {
             const select = document.getElementById('select-kelas');
             const kelasSebelumnya = select.value; 
-            
             const kelasUnik = [...new Set(semuaSiswa.map(s => s.kelas))];
             
             select.innerHTML = kelasUnik.length > 0 ? '' : '<option value="">Belum ada kelas</option>';
@@ -159,11 +175,7 @@
                 opt.value = k; opt.innerText = k;
                 select.appendChild(opt);
             });
-            
-            if (kelasSebelumnya && kelasUnik.includes(kelasSebelumnya)) {
-                select.value = kelasSebelumnya;
-            }
-            
+            if (kelasSebelumnya && kelasUnik.includes(kelasSebelumnya)) select.value = kelasSebelumnya;
             renderTabelSiswa();
         }
 
@@ -173,7 +185,6 @@
             if(!kelasAktif) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Silakan buat kelas terlebih dahulu.</td></tr>';
             
             const siswaKelasIni = semuaSiswa.filter(s => s.kelas === kelasAktif).sort((a,b) => a.noAbsen - b.noAbsen);
-            
             if(siswaKelasIni.length === 0) return tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada siswa di kelas ini. Tambahkan manual atau Import Excel.</td></tr>';
             
             tbody.innerHTML = '';
@@ -193,47 +204,98 @@
             });
         }
 
-        // --- TAMBAH KELAS CUSTOM MODAL ---
+        // ================= KELOLA KELAS =================
         function tambahKelasBaru() {
             document.getElementById('input-nama-kelas').value = '';
             document.getElementById('modal-kelas').classList.add('active');
             setTimeout(() => document.getElementById('input-nama-kelas').focus(), 100);
         }
-
-        function tutupModalKelas() {
-            document.getElementById('modal-kelas').classList.remove('active');
-        }
-
+        function tutupModalKelas() { document.getElementById('modal-kelas').classList.remove('active'); }
         function simpanKelasBaru() {
-            const namaKelas = document.getElementById('input-nama-kelas').value;
-            if (namaKelas && namaKelas.trim() !== "") {
-                const select = document.getElementById('select-kelas');
-                
-                if([...select.options].find(o => o.value === namaKelas)) {
-                    tutupModalKelas();
-                    return showAlert('error', 'Kelas tersebut sudah ada!', 'alert-datasiswa');
-                }
-                
-                if(select.options[0] && select.options[0].value === "") select.innerHTML = ''; 
-                
-                const opt = document.createElement('option');
-                opt.value = namaKelas; opt.innerText = namaKelas;
-                select.appendChild(opt);
-                select.value = namaKelas;
-                
-                renderTabelSiswa();
-                tutupModalKelas();
-                showAlert('success', `Kelas ${namaKelas} berhasil ditambahkan.`, 'alert-datasiswa');
-            } else {
-                showAlert('error', 'Nama kelas tidak boleh kosong!', 'alert-datasiswa');
+            const namaKelas = document.getElementById('input-nama-kelas').value.trim();
+            if (!namaKelas) return showAlert('error', 'Nama kelas tidak boleh kosong!', 'alert-datasiswa');
+            
+            const select = document.getElementById('select-kelas');
+            if([...select.options].find(o => o.value === namaKelas)) {
+                tutupModalKelas(); return showAlert('error', 'Kelas tersebut sudah ada!', 'alert-datasiswa');
             }
+            if(select.options[0] && select.options[0].value === "") select.innerHTML = ''; 
+            
+            const opt = document.createElement('option');
+            opt.value = namaKelas; opt.innerText = namaKelas;
+            select.appendChild(opt); select.value = namaKelas;
+            
+            renderTabelSiswa(); tutupModalKelas();
+            showAlert('success', `Kelas ${namaKelas} berhasil ditambahkan.`, 'alert-datasiswa');
         }
 
-        // --- CRUD SISWA ---
+        function bukaModalEditKelas() {
+            const kelasAktif = document.getElementById('select-kelas').value;
+            if(!kelasAktif) return showAlert('error', 'Pilih kelas yang akan diedit!', 'alert-datasiswa');
+            document.getElementById('input-edit-kelas').value = kelasAktif;
+            document.getElementById('modal-edit-kelas').classList.add('active');
+        }
+        function tutupModalEditKelas() { document.getElementById('modal-edit-kelas').classList.remove('active'); }
+        function eksekusiEditKelas() {
+            const namaLama = document.getElementById('select-kelas').value;
+            const namaBaru = document.getElementById('input-edit-kelas').value.trim();
+            if(!namaBaru || namaLama === namaBaru) return tutupModalEditKelas();
+
+            // Jika kelas masih kosong dari siswa, cukup ganti di HTML saja
+            const siswaKelasIni = semuaSiswa.filter(s => s.kelas === namaLama);
+            if(siswaKelasIni.length === 0) {
+                const opt = [...document.getElementById('select-kelas').options].find(o => o.value === namaLama);
+                opt.value = namaBaru; opt.innerText = namaBaru;
+                tutupModalEditKelas(); return showAlert('success', 'Nama kelas diubah!', 'alert-datasiswa');
+            }
+
+            setSubmitting('btn-eksekusi-edit-kelas', true, 'Memproses...');
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=edit_kelas&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify({namaLama, namaBaru}))}` 
+            }).then(r => r.json()).then(res => {
+                setSubmitting('btn-eksekusi-edit-kelas', false, 'Simpan Perubahan');
+                tutupModalEditKelas();
+                if(res.status === 'success') { showAlert('success', res.message, 'alert-datasiswa'); muatDataDatabase(); } 
+                else showAlert('error', res.message, 'alert-datasiswa');
+            });
+        }
+
+        function bukaModalHapusKelas() {
+            const kelasAktif = document.getElementById('select-kelas').value;
+            if(!kelasAktif) return showAlert('error', 'Pilih kelas yang akan dihapus!', 'alert-datasiswa');
+            document.getElementById('teks-nama-kelas-hapus').innerText = kelasAktif;
+            document.getElementById('modal-hapus-kelas').classList.add('active');
+        }
+        function tutupModalHapusKelas() { document.getElementById('modal-hapus-kelas').classList.remove('active'); }
+        function eksekusiHapusKelas() {
+            const kelasAktif = document.getElementById('select-kelas').value;
+            
+            const siswaKelasIni = semuaSiswa.filter(s => s.kelas === kelasAktif);
+            if(siswaKelasIni.length === 0) {
+                const select = document.getElementById('select-kelas');
+                select.remove(select.selectedIndex);
+                if(select.options.length === 0) select.innerHTML = '<option value="">Belum ada kelas</option>';
+                tutupModalHapusKelas(); renderTabelSiswa(); 
+                return showAlert('success', 'Kelas berhasil dihapus!', 'alert-datasiswa');
+            }
+
+            setSubmitting('btn-eksekusi-hapus-kelas', true, 'Menghapus...');
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=delete_kelas&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify({namaKelas: kelasAktif}))}` 
+            }).then(r => r.json()).then(res => {
+                setSubmitting('btn-eksekusi-hapus-kelas', false, 'Ya, Hapus Semua!');
+                tutupModalHapusKelas();
+                if(res.status === 'success') { showAlert('success', res.message, 'alert-datasiswa'); muatDataDatabase(); } 
+                else showAlert('error', res.message, 'alert-datasiswa');
+            });
+        }
+
+        // ================= KELOLA SISWA =================
         function bukaModalSiswa(rowIndex = null) {
             const kelasAktif = document.getElementById('select-kelas').value;
             if(!kelasAktif) return showAlert('error', 'Buat kelas dulu sebelum menambah siswa!', 'alert-datasiswa');
-            
             document.getElementById('modal-siswa').classList.add('active');
             if (rowIndex) {
                 document.getElementById('modal-title').innerText = "Edit Siswa";
@@ -249,9 +311,7 @@
                 document.getElementById('form-rowindex').value = '';
             }
         }
-
         function tutupModal() { document.getElementById('modal-siswa').classList.remove('active'); }
-
         function simpanSiswa() {
             const kelas = document.getElementById('select-kelas').value;
             const noAbsen = document.getElementById('form-no').value;
@@ -259,62 +319,41 @@
             const lp = document.getElementById('form-lp').value;
             const rowIndex = document.getElementById('form-rowindex').value;
 
-            if(!noAbsen || !namaLengkap) {
-                tutupModal();
-                return showAlert('error', 'Nomor Absen dan Nama wajib diisi!', 'alert-datasiswa');
-            }
+            if(!noAbsen || !namaLengkap) { tutupModal(); return showAlert('error', 'Nomor Absen dan Nama wajib diisi!', 'alert-datasiswa'); }
             
             setSubmitting('btn-simpan-siswa', true, 'Menyimpan...');
             const dataSiswa = { kelas, noAbsen, namaLengkap, lp, rowIndex: rowIndex || null };
-
             fetch(APPS_SCRIPT_URL, { 
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                 body: `action=save_siswa&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify(dataSiswa))}` 
             }).then(r => r.json()).then(res => {
                 setSubmitting('btn-simpan-siswa', false, 'Simpan');
                 tutupModal();
-                if(res.status === 'success') {
-                    showAlert('success', res.message, 'alert-datasiswa');
-                    muatDataDatabase(); 
-                } else showAlert('error', res.message, 'alert-datasiswa');
+                if(res.status === 'success') { showAlert('success', res.message, 'alert-datasiswa'); muatDataDatabase(); } 
+                else showAlert('error', res.message, 'alert-datasiswa');
             });
         }
-
         function editSiswa(rowIndex) { bukaModalSiswa(rowIndex); }
-
-        // --- HAPUS SISWA CUSTOM MODAL ---
         function konfirmasiHapus(rowIndex, namaLengkap) {
             document.getElementById('teks-konfirmasi-hapus').innerHTML = `Apakah Anda yakin ingin menghapus data siswa bernama <b>"${namaLengkap}"</b>?`;
             document.getElementById('hapus-rowindex').value = rowIndex;
             document.getElementById('modal-hapus').classList.add('active');
         }
-
-        function tutupModalHapus() {
-            document.getElementById('modal-hapus').classList.remove('active');
-        }
-
+        function tutupModalHapus() { document.getElementById('modal-hapus').classList.remove('active'); }
         function eksekusiHapus() {
             const rowIndex = document.getElementById('hapus-rowindex').value;
             tutupModalHapus(); 
-            
             showAlert('error', 'Sedang menghapus data...', 'alert-datasiswa');
-
             fetch(APPS_SCRIPT_URL, { 
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                 body: `action=delete_siswa&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify({rowIndex}))}` 
             }).then(r => r.json()).then(res => {
-                if(res.status === 'success') {
-                    showAlert('success', 'Data siswa berhasil dihapus!', 'alert-datasiswa');
-                    muatDataDatabase();
-                } else {
-                    showAlert('error', 'Gagal menghapus data.', 'alert-datasiswa');
-                }
-            }).catch(() => {
-                showAlert('error', 'Koneksi terputus. Gagal menghapus.', 'alert-datasiswa');
+                if(res.status === 'success') { showAlert('success', 'Data siswa berhasil dihapus!', 'alert-datasiswa'); muatDataDatabase(); } 
+                else { showAlert('error', 'Gagal menghapus data.', 'alert-datasiswa'); }
             });
         }
 
-        // --- IMPORT EXCEL CERDAS ---
+        // ================= IMPORT EXCEL =================
         function prosesImportExcel(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -322,13 +361,11 @@
             if(!kelasAktif) return showAlert('error', 'Buat atau pilih kelas dulu!', 'alert-datasiswa');
             
             setSubmitting('btn-import', true, 'Membaca Excel...');
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                
                 const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
                 
                 let toImport = [];
@@ -343,24 +380,19 @@
                         });
                     }
                 }
-
                 if(toImport.length === 0) {
                     setSubmitting('btn-import', false, '📥 Import Excel');
                     return showAlert('error', 'Gagal! Format Excel harus: Kolom 1=No, Kolom 2=Nama, Kolom 3=L/P', 'alert-datasiswa');
                 }
-
                 setSubmitting('btn-import', true, 'Mengirim ke Server...');
-                
                 fetch(APPS_SCRIPT_URL, { 
                     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                     body: `action=import_siswa&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify(toImport))}` 
                 }).then(r => r.json()).then(res => {
-                    setSubmitting('btn-import', false, '<i class="fas fa-file-import"></i> Import Excel');
+                    setSubmitting('btn-import', false, '📥 Import Excel');
                     document.getElementById('file-excel').value = ''; 
-                    if(res.status === 'success') {
-                        showAlert('success', res.message, 'alert-datasiswa');
-                        muatDataDatabase();
-                    } else showAlert('error', res.message, 'alert-datasiswa');
+                    if(res.status === 'success') { showAlert('success', res.message, 'alert-datasiswa'); muatDataDatabase(); } 
+                    else showAlert('error', res.message, 'alert-datasiswa');
                 });
             };
             reader.readAsArrayBuffer(file);

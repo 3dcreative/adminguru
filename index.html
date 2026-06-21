@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin Guru</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card active" style="max-width: 600px;">
+            <h1>Menu Utama</h1>
+            <div class="subtitle">Selamat Datang, <span id="nama-user" style="font-weight:bold; color:#3498db;"></span></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:20px;">
+                <button class="btn" onclick="window.location.href='data_sekolah.html'">🏫 Data Sekolah</button>
+                <button class="btn" onclick="window.location.href='data_siswa.html'">👥 Data Siswa</button>
+                <button class="btn btn-success" onclick="window.location.href='absen.html'">📝 Absensi Siswa</button>
+                <button class="btn btn-success" onclick="window.location.href='jurnal.html'">📓 Jurnal Mengajar</button>
+                <button class="btn btn-success" style="grid-column: span 2;" onclick="window.location.href='nilai.html'">📊 Daftar Nilai</button>
+            </div>
+
+            <button class="btn btn-danger" style="margin-top: 30px;" onclick="logoutGlobal()">Keluar Aplikasi</button>
+        </div>
+    </div>
+    <div class="footer">© 2026 Hak Cipta Milik 3D Creative.</div>
+
+    <script src="config.js"></script>
+    <script>
+        // Cek Keamanan: Jika belum login atau belum aktif, tendang kembali ke login.html
+        window.onload = () => {
+            const user = JSON.parse(localStorage.getItem('userAdminGuru'));
+            if (!user || user.status_akun !== 'aktif') {
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('nama-user').innerText = user.nama;
+            }
+        };
+    </script>
+</body>
+</html>

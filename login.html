@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Admin Guru</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card active" id="view-login">
+            <h1>Admin Guru</h1>
+            <div class="subtitle">Absensi • Jurnal • Nilai Siswa</div>
+            <div id="alert-login" class="alert-custom"></div>
+            <div class="form-group"><input type="email" id="login-email" placeholder="Email (Username)" required></div>
+            <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
+            <button class="btn" onclick="prosesLogin()">Masuk</button>
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <span class="toggle-link" onclick="window.open('https://wa.me/6281230304141?text=Halo Admin 3D Creative, saya lupa password aplikasi.', '_blank')">Lupa Password?</span>
+                <span class="toggle-link" onclick="switchView('register')">Daftar Akun Baru</span>
+            </div>
+        </div>
+
+        <div class="card" id="view-register">
+            <h1>Daftar Akun</h1>
+            <div id="alert-register" class="alert-custom"></div>
+            <div class="form-group"><input type="text" id="reg-nama" placeholder="Nama Lengkap" required></div>
+            <div class="form-group"><input type="email" id="reg-email" placeholder="Email" required></div>
+            <div class="form-group"><input type="password" id="reg-password" placeholder="Password" required></div>
+            <button class="btn" onclick="prosesRegister()">Daftar</button>
+            <span class="toggle-link" onclick="switchView('login')">Ke halaman Login</span>
+        </div>
+
+        <div class="card" id="view-setup">
+            <h1>Setup Database</h1>
+            <p style="font-size: 0.9em; text-align:left;">Buat Google Sheets kosong, ubah akses bagikan menjadi <b>"Siapa saja memiliki link"</b> dan <b>"Editor"</b>, lalu tempel linknya di bawah.</p>
+            <div id="alert-setup" class="alert-custom"></div>
+            <div class="form-group"><input type="url" id="setup-url" placeholder="Paste link Google Sheets..." required></div>
+            <button class="btn" onclick="prosesSimpanLink()">Simpan & Proses</button>
+            <button class="btn btn-danger" onclick="logoutGlobal()">Keluar Akun</button>
+        </div>
+
+        <div class="card" id="view-payment">
+            <h1>Aktivasi Akun</h1>
+            <p style="color:#e74c3c; font-weight:bold;">Status: PENDING</p>
+            <p style="font-size: 0.9em;">Database siap. Silakan hubungi Admin untuk pembayaran dan aktivasi.</p>
+            <button class="btn btn-success" onclick="window.open('https://wa.me/6281230304141?text=Halo Admin 3D Creative, saya ingin aktivasi akun.', '_blank')">Hubungi Admin WA</button>
+            <button class="btn btn-danger" onclick="logoutGlobal()">Keluar Aplikasi</button>
+        </div>
+    </div>
+    <div class="footer">© 2026 Hak Cipta Milik 3D Creative.</div>
+
+    <script src="config.js"></script>
+    <script>
+        // Cek Sesi Saat Halaman Dimuat
+        window.onload = () => {
+            const user = JSON.parse(localStorage.getItem('userAdminGuru'));
+            if (user) arahkanRute(user);
+        };
+
+        function switchView(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`view-${id}`).classList.add('active');
+        }
+
+        function arahkanRute(user) {
+            if (user.status_akun === 'pending_url' || !user.status_akun) switchView('setup');
+            else if (user.status_akun === 'pending_payment') switchView('payment');
+            else if (user.status_akun === 'aktif') window.location.href = 'index.html'; // Pindah ke halaman dashboard!
+        }
+
+        function prosesRegister() {
+            const n = document.getElementById('reg-nama').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-password').value;
+            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=register&nama=${n}&email=${e}&password=${p}` })
+            .then(r => r.json()).then(data => {
+                showAlert(data.status, data.message, 'alert-register');
+                if(data.status === 'success') setTimeout(() => switchView('login'), 2000);
+            });
+        }
+
+        function prosesLogin() {
+            const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
+            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=login&email=${e}&password=${p}` })
+            .then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    localStorage.setItem('userAdminGuru', JSON.stringify(data.user));
+                    arahkanRute(data.user);
+                } else showAlert('error', data.message, 'alert-login');
+            });
+        }
+
+        function prosesSimpanLink() {
+            const url = document.getElementById('setup-url').value;
+            const user = JSON.parse(localStorage.getItem('userAdminGuru'));
+            document.querySelector('#view-setup .btn').innerText = 'Memproses...';
+            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=save_url&email=${user.email}&url=${url}` })
+            .then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    user.url = url; user.status_akun = data.status_akun;
+                    localStorage.setItem('userAdminGuru', JSON.stringify(user));
+                    arahkanRute(user);
+                } else {
+                    showAlert('error', data.message, 'alert-setup');
+                    document.querySelector('#view-setup .btn').innerText = 'Simpan & Proses';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Admin Guru",
+  "short_name": "AdminGuru",
+  "start_url": "login.html",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#3498db",
+  "description": "Aplikasi Pendidikan oleh 3D Creative",
+  "icons": [ {"src": "https://cdn-icons-png.flaticon.com/512/1046/1046424.png", "sizes": "512x512", "type": "image/png"} ]
+}

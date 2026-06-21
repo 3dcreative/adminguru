@@ -11,13 +11,16 @@
     <div class="container">
         <div class="card active" id="view-login">
             <h1>Admin Guru</h1>
-            <div class="subtitle">Absensi • Jurnal • Nilai Siswa</div>
+            <div class="subtitle">Absensi Siswa • Jurnal Mengajar • Nilai Siswa</div>
             <div id="alert-login" class="alert-custom"></div>
             <div class="form-group"><input type="email" id="login-email" placeholder="Email (Username)" required></div>
-            <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
-            <button class="btn" onclick="prosesLogin()">Masuk</button>
+            <div class="form-group" style="position: relative;">
+                <input type="password" id="login-password" placeholder="Password" required>
+                <span class="eye-icon" onclick="togglePassword('login-password')">👁️</span>
+            </div>
+            <button class="btn" id="btn-login" onclick="prosesLogin()">Masuk</button>
             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <span class="toggle-link" onclick="window.open('https://wa.me/6281230304141?text=Halo Admin 3D Creative, saya lupa password aplikasi.', '_blank')">Lupa Password?</span>
+                <span class="toggle-link" onclick="lupaPassword()">Lupa Password?</span>
                 <span class="toggle-link" onclick="switchView('register')">Daftar Akun Baru</span>
             </div>
         </div>
@@ -27,8 +30,11 @@
             <div id="alert-register" class="alert-custom"></div>
             <div class="form-group"><input type="text" id="reg-nama" placeholder="Nama Lengkap" required></div>
             <div class="form-group"><input type="email" id="reg-email" placeholder="Email" required></div>
-            <div class="form-group"><input type="password" id="reg-password" placeholder="Password" required></div>
-            <button class="btn" onclick="prosesRegister()">Daftar</button>
+            <div class="form-group" style="position: relative;">
+                <input type="password" id="reg-password" placeholder="Password" required>
+                <span class="eye-icon" onclick="togglePassword('reg-password')">👁️</span>
+            </div>
+            <button class="btn" id="btn-register" onclick="prosesRegister()">Daftar</button>
             <span class="toggle-link" onclick="switchView('login')">Ke halaman Login</span>
         </div>
 
@@ -37,7 +43,7 @@
             <p style="font-size: 0.9em; text-align:left;">Buat Google Sheets kosong, ubah akses bagikan menjadi <b>"Siapa saja memiliki link"</b> dan <b>"Editor"</b>, lalu tempel linknya di bawah.</p>
             <div id="alert-setup" class="alert-custom"></div>
             <div class="form-group"><input type="url" id="setup-url" placeholder="Paste link Google Sheets..." required></div>
-            <button class="btn" onclick="prosesSimpanLink()">Simpan & Proses</button>
+            <button class="btn" id="btn-setup" onclick="prosesSimpanLink()">Simpan & Proses</button>
             <button class="btn btn-danger" onclick="logoutGlobal()">Keluar Akun</button>
         </div>
 
@@ -45,7 +51,7 @@
             <h1>Aktivasi Akun</h1>
             <p style="color:#e74c3c; font-weight:bold;">Status: PENDING</p>
             <p style="font-size: 0.9em;">Database siap. Silakan hubungi Admin untuk pembayaran dan aktivasi.</p>
-            <button class="btn btn-success" onclick="window.open('https://wa.me/6281230304141?text=Halo Admin 3D Creative, saya ingin aktivasi akun.', '_blank')">Hubungi Admin WA</button>
+            <button class="btn btn-success" onclick="hubungiAdminBayar()">Hubungi Admin WA</button>
             <button class="btn btn-danger" onclick="logoutGlobal()">Keluar Aplikasi</button>
         </div>
     </div>
@@ -53,7 +59,6 @@
 
     <script src="config.js"></script>
     <script>
-        // Cek Sesi Saat Halaman Dimuat
         window.onload = () => {
             const user = JSON.parse(localStorage.getItem('userAdminGuru'));
             if (user) arahkanRute(user);
@@ -64,47 +69,109 @@
             document.getElementById(`view-${id}`).classList.add('active');
         }
 
+        function togglePassword(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        function setSubmitting(btnId, isSubmit, textAwal) {
+            const btn = document.getElementById(btnId);
+            if (isSubmit) {
+                btn.disabled = true;
+                btn.innerHTML = `${textAwal} <span class="spinner"></span>`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = textAwal;
+            }
+        }
+
         function arahkanRute(user) {
             if (user.status_akun === 'pending_url' || !user.status_akun) switchView('setup');
             else if (user.status_akun === 'pending_payment') switchView('payment');
-            else if (user.status_akun === 'aktif') window.location.href = 'index.html'; // Pindah ke halaman dashboard!
+            else if (user.status_akun === 'aktif') window.location.href = 'index.html';
         }
 
         function prosesRegister() {
             const n = document.getElementById('reg-nama').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-password').value;
-            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=register&nama=${n}&email=${e}&password=${p}` })
+            if(!n || !e || !p) return showAlert('error', 'Semua kolom wajib diisi!', 'alert-register');
+            
+            setSubmitting('btn-register', true, 'Mendaftar...');
+            
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=register&nama=${encodeURIComponent(n)}&email=${encodeURIComponent(e)}&password=${encodeURIComponent(p)}` 
+            })
             .then(r => r.json()).then(data => {
+                setSubmitting('btn-register', false, 'Daftar');
                 showAlert(data.status, data.message, 'alert-register');
                 if(data.status === 'success') setTimeout(() => switchView('login'), 2000);
+            }).catch(() => {
+                setSubmitting('btn-register', false, 'Daftar');
+                showAlert('error', 'Gagal tersambung ke server.', 'alert-register');
             });
         }
 
         function prosesLogin() {
             const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
-            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=login&email=${e}&password=${p}` })
+            if(!e || !p) return showAlert('error', 'Masukkan email & password!', 'alert-login');
+            
+            setSubmitting('btn-login', true, 'Memvalidasi...');
+            
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=login&email=${encodeURIComponent(e)}&password=${encodeURIComponent(p)}` 
+            })
             .then(r => r.json()).then(data => {
+                setSubmitting('btn-login', false, 'Masuk');
                 if(data.status === 'success') {
                     localStorage.setItem('userAdminGuru', JSON.stringify(data.user));
                     arahkanRute(data.user);
-                } else showAlert('error', data.message, 'alert-login');
+                } else {
+                    showAlert('error', data.message, 'alert-login');
+                }
+            }).catch(() => {
+                setSubmitting('btn-login', false, 'Masuk');
+                showAlert('error', 'Gagal memproses login.', 'alert-login');
             });
         }
 
         function prosesSimpanLink() {
             const url = document.getElementById('setup-url').value;
             const user = JSON.parse(localStorage.getItem('userAdminGuru'));
-            document.querySelector('#view-setup .btn').innerText = 'Memproses...';
-            fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=save_url&email=${user.email}&url=${url}` })
+            if(!url.includes('docs.google.com/spreadsheets')) return showAlert('error', 'Masukkan URL Google Sheets yang valid!', 'alert-setup');
+            
+            setSubmitting('btn-setup', true, 'Menyiapkan Database...');
+            
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=save_url&email=${encodeURIComponent(user.email)}&url=${encodeURIComponent(url)}` 
+            })
             .then(r => r.json()).then(data => {
+                setSubmitting('btn-setup', false, 'Simpan & Proses');
                 if(data.status === 'success') {
                     user.url = url; user.status_akun = data.status_akun;
                     localStorage.setItem('userAdminGuru', JSON.stringify(user));
                     arahkanRute(user);
                 } else {
                     showAlert('error', data.message, 'alert-setup');
-                    document.querySelector('#view-setup .btn').innerText = 'Simpan & Proses';
                 }
+            }).catch(() => {
+                setSubmitting('btn-setup', false, 'Simpan & Proses');
+                showAlert('error', 'Gagal mengonfigurasi Sheets.', 'alert-setup');
             });
+        }
+
+        function lupaPassword() {
+            const email = document.getElementById('login-email').value || "[Email_Anda]";
+            window.open(`https://wa.me/6281230304141?text=Halo%20Admin%203D%20Creative,%20saya%20pengguna%20dengan%20username%20${encodeURIComponent(email)}%20lupa%20password%20aplikasi%20sehingga%20perlu%20mereset%20password.`, '_blank');
+        }
+
+        function hubungiAdminBayar() {
+            const user = JSON.parse(localStorage.getItem('userAdminGuru'));
+            window.open(`https://wa.me/6281230304141?text=Halo%20Admin%203D%20Creative,%20saya%20${encodeURIComponent(user.nama)}%20(${encodeURIComponent(user.email)})%20ingin%20melakukan%20pembayaran%20akun%20aplikasi%20perlu%20petunjuk%20admin.`, '_blank');
         }
     </script>
 </body>

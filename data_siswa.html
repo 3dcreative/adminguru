@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Siswa - Admin Guru</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .card { max-width: 800px; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: space-between; background: #e8f4f8; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; align-items: center; justify-content: space-between; background: #e8f4f8; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; }
         select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; min-width: 150px; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
         th, td { padding: 12px 10px; border: 1px solid #bdc3c7; text-align: left; font-size: 0.9em; }
         th { background-color: #2c3e50; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
-        .btn-sm { padding: 6px 12px; font-size: 0.85em; width: auto; margin: 2px; }
+        .btn-sm { padding: 8px 12px; font-size: 0.85em; width: auto; margin: 2px; }
         
         /* Modal Form CSS */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
@@ -38,13 +39,11 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
                 <button class="btn btn-sm btn-success" id="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
-                <div>
-                    <input type="file" id="file-excel" accept=".xlsx, .xls" style="display: none;" onchange="prosesImportExcel(event)">
-                    <button class="btn btn-sm" style="background-color: #f39c12;" id="btn-import" onclick="document.getElementById('file-excel').click()">📥 Import Excel</button>
-                    <button class="btn btn-sm btn-secondary" onclick="window.location.href='index.html'">Kembali</button>
-                </div>
+                <input type="file" id="file-excel" accept=".xlsx, .xls" style="display: none;" onchange="prosesImportExcel(event)">
+                <button class="btn btn-sm" style="background-color: #f39c12; color: white;" id="btn-import" onclick="document.getElementById('file-excel').click()">📥 Import Excel</button>
+                <button class="btn btn-sm btn-secondary" onclick="window.location.href='index.html'">Kembali</button>
             </div>
 
             <div style="overflow-x: auto;">
@@ -54,7 +53,7 @@
                             <th width="10%">No</th>
                             <th>Nama Lengkap</th>
                             <th width="10%">L/P</th>
-                            <th width="20%">Aksi</th>
+                            <th width="15%" style="text-align: center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-body">
@@ -75,14 +74,14 @@
                 <select id="form-lp" style="width:100%;"><option value="L">L</option><option value="P">P</option></select>
             </div>
             <input type="hidden" id="form-rowindex">
-            <div style="display:flex; gap:10px; margin-top:20px;">
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
                 <button class="btn btn-secondary" onclick="tutupModal()">Batal</button>
                 <button class="btn btn-success" id="btn-simpan-siswa" onclick="simpanSiswa()">Simpan</button>
             </div>
         </div>
     </div>
 
-<div class="modal" id="modal-kelas">
+    <div class="modal" id="modal-kelas">
         <div class="modal-content">
             <h2 style="margin-top:0;">Tambah Kelas</h2>
             <p style="color: #7f8c8d; font-size: 0.9em;">Masukkan nama kelas baru (Contoh: Kelas 1A atau Matematika VII)</p>
@@ -98,6 +97,7 @@
 
     <div class="modal" id="modal-hapus">
         <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 3em; color: #e74c3c; margin-bottom: 10px;"><i class="fas fa-exclamation-circle"></i></div>
             <h2 style="margin-top:0; color: #e74c3c;">Konfirmasi Hapus</h2>
             <p id="teks-konfirmasi-hapus" style="margin-bottom: 20px;">Yakin ingin menghapus data ini?</p>
             <input type="hidden" id="hapus-rowindex">
@@ -113,7 +113,7 @@
     <script src="config.js"></script>
     <script>
         let userAktif = null;
-        let semuaSiswa = []; // Menyimpan semua data mentah dari database
+        let semuaSiswa = []; 
         
         window.onload = () => {
             userAktif = JSON.parse(localStorage.getItem('userAdminGuru'));
@@ -145,6 +145,9 @@
 
         function ekstrakKelas() {
             const select = document.getElementById('select-kelas');
+            // Simpan nilai kelas yang sedang dipilih agar tidak reset setelah hapus/simpan
+            const kelasSebelumnya = select.value; 
+            
             const kelasUnik = [...new Set(semuaSiswa.map(s => s.kelas))];
             
             select.innerHTML = kelasUnik.length > 0 ? '' : '<option value="">Belum ada kelas</option>';
@@ -153,22 +156,13 @@
                 opt.value = k; opt.innerText = k;
                 select.appendChild(opt);
             });
-            renderTabelSiswa();
-        }
-
-        function tambahKelasBaru() {
-            const namaKelas = prompt("Masukkan Nama Kelas Baru (Contoh: Kelas 1A atau Matematika VII):");
-            if (namaKelas && namaKelas.trim() !== "") {
-                const select = document.getElementById('select-kelas');
-                if([...select.options].find(o => o.value === namaKelas)) return alert("Kelas sudah ada!");
-                if(select.options[0].value === "") select.innerHTML = ''; // Hapus tulisan "Belum ada kelas"
-                
-                const opt = document.createElement('option');
-                opt.value = namaKelas; opt.innerText = namaKelas;
-                select.appendChild(opt);
-                select.value = namaKelas;
-                renderTabelSiswa();
+            
+            // Kembalikan ke pilihan sebelumnya jika ada
+            if (kelasSebelumnya && kelasUnik.includes(kelasSebelumnya)) {
+                select.value = kelasSebelumnya;
             }
+            
+            renderTabelSiswa();
         }
 
         function renderTabelSiswa() {
@@ -187,12 +181,50 @@
                     <td style="text-align:center;">${s.noAbsen}</td>
                     <td style="font-weight:bold;">${s.namaLengkap}</td>
                     <td style="text-align:center;">${s.lp}</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" onclick="editSiswa(${s.rowIndex})">Edit</button>
-                        <button class="btn btn-sm btn-danger" style="margin-top:0;" onclick="hapusSiswa(${s.rowIndex}, '${s.namaLengkap}')">Hapus</button>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn btn-sm btn-secondary" onclick="editSiswa(${s.rowIndex})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="konfirmasiHapus(${s.rowIndex}, '${s.namaLengkap}')" title="Hapus"><i class="fas fa-trash"></i></button>
                     </td>`;
                 tbody.appendChild(tr);
             });
+        }
+
+        // --- TAMBAH KELAS CUSTOM MODAL ---
+        function tambahKelasBaru() {
+            document.getElementById('input-nama-kelas').value = '';
+            document.getElementById('modal-kelas').classList.add('active');
+            setTimeout(() => document.getElementById('input-nama-kelas').focus(), 100);
+        }
+
+        function tutupModalKelas() {
+            document.getElementById('modal-kelas').classList.remove('active');
+        }
+
+        function simpanKelasBaru() {
+            const namaKelas = document.getElementById('input-nama-kelas').value;
+            if (namaKelas && namaKelas.trim() !== "") {
+                const select = document.getElementById('select-kelas');
+                
+                // Cek jika kelas sudah ada
+                if([...select.options].find(o => o.value === namaKelas)) {
+                    tutupModalKelas();
+                    return showAlert('error', 'Kelas tersebut sudah ada!', 'alert-datasiswa');
+                }
+                
+                // Hapus opsi kosong jika ada
+                if(select.options[0] && select.options[0].value === "") select.innerHTML = ''; 
+                
+                const opt = document.createElement('option');
+                opt.value = namaKelas; opt.innerText = namaKelas;
+                select.appendChild(opt);
+                select.value = namaKelas;
+                
+                renderTabelSiswa();
+                tutupModalKelas();
+                showAlert('success', `Kelas ${namaKelas} berhasil ditambahkan.`, 'alert-datasiswa');
+            } else {
+                showAlert('error', 'Nama kelas tidak boleh kosong!', 'alert-datasiswa');
+            }
         }
 
         // --- CRUD SISWA ---
@@ -225,7 +257,10 @@
             const lp = document.getElementById('form-lp').value;
             const rowIndex = document.getElementById('form-rowindex').value;
 
-            if(!noAbsen || !namaLengkap) return alert("Nomor dan Nama wajib diisi!");
+            if(!noAbsen || !namaLengkap) {
+                tutupModal();
+                return showAlert('error', 'Nomor Absen dan Nama wajib diisi!', 'alert-datasiswa');
+            }
             
             setSubmitting('btn-simpan-siswa', true, 'Menyimpan...');
             const dataSiswa = { kelas, noAbsen, namaLengkap, lp, rowIndex: rowIndex || null };
@@ -245,20 +280,36 @@
 
         function editSiswa(rowIndex) { bukaModalSiswa(rowIndex); }
 
-        function hapusSiswa(rowIndex, namaLengkap) {
-            if(!confirm(`Yakin ingin menghapus ${namaLengkap}?`)) return;
+        // --- HAPUS SISWA CUSTOM MODAL ---
+        function konfirmasiHapus(rowIndex, namaLengkap) {
+            document.getElementById('teks-konfirmasi-hapus').innerHTML = `Apakah Anda yakin ingin menghapus data siswa bernama <b>"${namaLengkap}"</b>?`;
+            document.getElementById('hapus-rowindex').value = rowIndex;
+            document.getElementById('modal-hapus').classList.add('active');
+        }
+
+        function tutupModalHapus() {
+            document.getElementById('modal-hapus').classList.remove('active');
+        }
+
+        function eksekusiHapus() {
+            const rowIndex = document.getElementById('hapus-rowindex').value;
+            tutupModalHapus(); // Tutup modal dulu
             
-            // Animasi Loading Hapus (karena hapus langsung dari tabel, kita tampilkan alert text)
-            showAlert('error', 'Sedang menghapus...', 'alert-datasiswa');
+            // Animasi Loading Hapus
+            showAlert('error', 'Sedang menghapus data...', 'alert-datasiswa');
 
             fetch(APPS_SCRIPT_URL, { 
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                 body: `action=delete_siswa&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify({rowIndex}))}` 
             }).then(r => r.json()).then(res => {
                 if(res.status === 'success') {
-                    showAlert('success', 'Siswa dihapus!', 'alert-datasiswa');
-                    muatDataDatabase();
+                    showAlert('success', 'Data siswa berhasil dihapus!', 'alert-datasiswa');
+                    muatDataDatabase(); // Refresh data dari sheet
+                } else {
+                    showAlert('error', 'Gagal menghapus data.', 'alert-datasiswa');
                 }
+            }).catch(() => {
+                showAlert('error', 'Koneksi terputus. Gagal menghapus.', 'alert-datasiswa');
             });
         }
 
@@ -282,7 +333,6 @@
                 
                 let toImport = [];
                 // Asumsi Excel Guru: Kolom 1 = No, Kolom 2 = Nama, Kolom 3 = L/P
-                // Kita mulai dari baris 1 (mengabaikan baris 0 yang biasanya header Excel)
                 for(let i = 1; i < rows.length; i++) {
                     const row = rows[i];
                     if(row.length >= 2 && row[1]) { // Pastikan kolom nama ada isinya
@@ -306,7 +356,7 @@
                     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                     body: `action=import_siswa&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify(toImport))}` 
                 }).then(r => r.json()).then(res => {
-                    setSubmitting('btn-import', false, '📥 Import Excel');
+                    setSubmitting('btn-import', false, '<i class="fas fa-file-import"></i> Import Excel');
                     document.getElementById('file-excel').value = ''; // Reset input file
                     if(res.status === 'success') {
                         showAlert('success', res.message, 'alert-datasiswa');

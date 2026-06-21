@@ -60,7 +60,7 @@
                 </div>
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="btn btn-sm btn-secondary" onclick="window.location.href='index.html'">Kembali</button>
-                    <button class="btn btn-sm" style="background-color: #9b59b6; color: white;" onclick="alert('Fitur Rekap & Cetak akan segera hadir di Tahap 2!')"><i class="fas fa-print"></i> Pusat Rekap</button> 
+                    <button class="btn btn-sm" style="background-color: #9b59b6; color: white;" onclick="showAlert('error', 'Fitur Rekap & Cetak akan segera hadir di Tahap 2!', 'alert-absen')"><i class="fas fa-print"></i> Pusat Rekap</button> 
                     <button class="btn btn-sm btn-success" id="btn-simpan-absen" onclick="simpanAbsensi()"><i class="fas fa-save"></i> Simpan Absensi</button>
                 </div>
             </div>
@@ -100,6 +100,20 @@
             
             muatDaftarKelas();
         };
+
+        /* ================= FUNGSI SAKRAL: ALERT ELEGAN YANG SEMPAT HILANG ================= */
+        function showAlert(type, message, elementId) {
+            const alertBox = document.getElementById(elementId);
+            if (!alertBox) return;
+            
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            alertBox.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            alertBox.className = `alert-custom ${type}`; // Sesuai dengan CSS global Anda
+            alertBox.style.display = 'block';
+            
+            // Otomatis menghilang dalam 4 detik
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        }
 
         function setSubmitting(btnId, isSubmit, textAwal) {
             const btn = document.getElementById(btnId);
@@ -149,7 +163,6 @@
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Memuat data absensi... <span class="spinner" style="border-top-color:#3498db;"></span></td></tr>';
             badge.innerText = "Memuat...";
 
-            // Konversi tanggal format lokal untuk dikirim ke backend (misal: 2026-06-22)
             fetch(APPS_SCRIPT_URL, { 
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                 body: `action=get_absen&url=${encodeURIComponent(userAktif.url)}&kelas=${encodeURIComponent(kelas)}&tanggal=${encodeURIComponent(tanggal)}` 
@@ -181,13 +194,11 @@
             tbody.innerHTML = '';
             
             dataAbsenSaatIni.forEach((s, index) => {
-                // Menentukan tombol mana yang aktif
                 const actH = s.status === 'H' ? 'active' : '';
                 const actS = s.status === 'S' ? 'active' : '';
                 const actI = s.status === 'I' ? 'active' : '';
                 const actA = s.status === 'A' ? 'active' : '';
 
-                // Efek arsiran jika baris tersebut Alpa (A)
                 const bgRow = s.status === 'A' ? 'background-color: #fdf3f2;' : '';
 
                 const tr = document.createElement('tr');
@@ -205,7 +216,7 @@
                         </div>
                     </td>
                     <td>
-                        <input type="text" class="keterangan" value="${s.keterangan}" placeholder="Opsional..." onchange="ubahKet(${index}, this.value)">
+                        <input type="text" class="keterangan" value="${s.keterangan || ''}" placeholder="Opsional..." onchange="ubahKet(${index}, this.value)">
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -214,7 +225,7 @@
 
         function ubahStatus(index, statusBaru) {
             dataAbsenSaatIni[index].status = statusBaru;
-            renderTabelAbsen(); // Re-render agar warna tombol berubah otomatis
+            renderTabelAbsen(); 
         }
 
         function ubahKet(index, ketBaru) {
@@ -244,7 +255,6 @@
                 setSubmitting('btn-simpan-absen', false, '<i class="fas fa-save"></i> Simpan Absensi');
                 if(res.status === 'success') {
                     showAlert('success', res.message, 'alert-absen');
-                    // Ubah badge jadi Mode Edit setelah sukses simpan
                     const badge = document.getElementById('badge-status');
                     badge.innerText = "Tersimpan (Mode Edit)";
                     badge.style.background = "#f1c40f"; badge.style.color = "white";

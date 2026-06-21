@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Sekolah - Admin Guru</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        @media(min-width: 600px) { .form-grid { grid-template-columns: 1fr 1fr; gap: 15px; } }
+        select { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 5px; font-size: 1em; background: white; }
+        .card { max-width: 650px; } /* Diperlebar khusus halaman ini */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card active" id="view-datasekolah">
+            <h1>🏫 Data Sekolah</h1>
+            <div class="subtitle">Pengaturan Profil Sekolah & Guru</div>
+            
+            <div id="alert-datasekolah" class="alert-custom"></div>
+
+            <div class="form-grid">
+                <div class="form-group"><label>Nama Sekolah</label><input type="text" id="ds-nama-sekolah" placeholder="Contoh: SDN 1 Mengwi"></div>
+                <div class="form-group"><label>Kabupaten/Kota</label><input type="text" id="ds-kabupaten" placeholder="Contoh: Badung"></div>
+                
+                <div class="form-group"><label>Nama Kepala Sekolah</label><input type="text" id="ds-nama-kepsek" placeholder="Nama Lengkap & Gelar"></div>
+                <div class="form-group"><label>NIP Kepala Sekolah</label><input type="text" id="ds-nip-kepsek" placeholder="NIP Kepsek (Jika ada)"></div>
+                
+                <div class="form-group"><label>Nama Guru (Anda)</label><input type="text" id="ds-nama-guru" placeholder="Nama Lengkap & Gelar"></div>
+                <div class="form-group"><label>NIP Guru</label><input type="text" id="ds-nip-guru" placeholder="NIP/NUPTK"></div>
+                
+                <div class="form-group">
+                    <label>Jenis Guru</label>
+                    <select id="ds-jenis-guru">
+                        <option value="Guru Kelas">Guru Kelas</option>
+                        <option value="Guru Mapel">Guru Mata Pelajaran</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Tahun Ajaran</label><input type="text" id="ds-tahun-ajaran" placeholder="Contoh: 2026/2027"></div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Semester</label>
+                    <select id="ds-semester">
+                        <option value="Ganjil">Ganjil</option>
+                        <option value="Genap">Genap</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn" style="background-color: #7f8c8d;" onclick="window.location.href='index.html'">Kembali</button>
+                <button class="btn btn-success" id="btn-simpan" onclick="simpanDataSekolah()">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">© 2026 Hak Cipta Milik 3D Creative.</div>
+
+    <script src="config.js"></script>
+    <script>
+        let userAktif = null;
+
+        // Pengecekan sesi & Tarik data lama saat halaman dimuat
+        window.onload = () => {
+            userAktif = JSON.parse(localStorage.getItem('userAdminGuru'));
+            if (!userAktif || userAktif.status_akun !== 'aktif') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Tarik data sekolah dari Sheets jika sudah ada
+            muatDataLama();
+        };
+
+        function setSubmitting(btnId, isSubmit, textAwal) {
+            const btn = document.getElementById(btnId);
+            if (isSubmit) { btn.disabled = true; btn.innerHTML = `${textAwal} <span class="spinner"></span>`; } 
+            else { btn.disabled = false; btn.innerHTML = textAwal; }
+        }
+
+        function muatDataLama() {
+            setSubmitting('btn-simpan', true, 'Memuat Data...');
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=get_data_sekolah&url=${encodeURIComponent(userAktif.url)}` 
+            })
+            .then(r => r.json()).then(res => {
+                setSubmitting('btn-simpan', false, 'Simpan Data');
+                if (res.status === 'success') {
+                    document.getElementById('ds-nama-sekolah').value = res.data.namaSekolah;
+                    document.getElementById('ds-kabupaten').value = res.data.kabupaten;
+                    document.getElementById('ds-nama-kepsek').value = res.data.namaKepsek;
+                    document.getElementById('ds-nip-kepsek').value = res.data.nipKepsek;
+                    document.getElementById('ds-nama-guru').value = res.data.namaGuru;
+                    document.getElementById('ds-nip-guru').value = res.data.nipGuru;
+                    document.getElementById('ds-jenis-guru').value = res.data.jenisGuru;
+                    document.getElementById('ds-tahun-ajaran').value = res.data.tahunAjaran;
+                    document.getElementById('ds-semester').value = res.data.semester;
+                }
+            }).catch(() => {
+                setSubmitting('btn-simpan', false, 'Simpan Data');
+                showAlert('error', 'Gagal menarik data lama. Cek koneksi.', 'alert-datasekolah');
+            });
+        }
+
+        function simpanDataSekolah() {
+            const dataForm = {
+                namaSekolah: document.getElementById('ds-nama-sekolah').value,
+                kabupaten: document.getElementById('ds-kabupaten').value,
+                namaKepsek: document.getElementById('ds-nama-kepsek').value,
+                nipKepsek: document.getElementById('ds-nip-kepsek').value,
+                namaGuru: document.getElementById('ds-nama-guru').value,
+                nipGuru: document.getElementById('ds-nip-guru').value,
+                jenisGuru: document.getElementById('ds-jenis-guru').value,
+                tahunAjaran: document.getElementById('ds-tahun-ajaran').value,
+                semester: document.getElementById('ds-semester').value
+            };
+
+            // Validasi input kosong
+            for(let key in dataForm) {
+                if(!dataForm[key]) return showAlert('error', 'Semua kolom wajib diisi!', 'alert-datasekolah');
+            }
+
+            setSubmitting('btn-simpan', true, 'Menyimpan...');
+
+            fetch(APPS_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                body: `action=save_data_sekolah&url=${encodeURIComponent(userAktif.url)}&data=${encodeURIComponent(JSON.stringify(dataForm))}` 
+            })
+            .then(r => r.json()).then(res => {
+                setSubmitting('btn-simpan', false, 'Simpan Data');
+                if(res.status === 'success') {
+                    showAlert('success', res.message, 'alert-datasekolah');
+                } else {
+                    showAlert('error', res.message, 'alert-datasekolah');
+                }
+            }).catch(() => {
+                setSubmitting('btn-simpan', false, 'Simpan Data');
+                showAlert('error', 'Gagal menyimpan. Cek koneksi internet.', 'alert-datasekolah');
+            });
+        }
+    </script>
+</body>
+</html>

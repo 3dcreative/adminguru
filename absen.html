@@ -39,23 +39,29 @@
         /* MODAL REKAP FULLSCREEN */
         .modal-rekap { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); overflow-y: auto; padding: 20px 10px; }
         .modal-rekap.active { display: block; }
-        .rekap-box { background: white; margin: 0 auto; max-width: 1200px; padding: 30px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .rekap-box { background: white; margin: 0 auto; max-width: 1250px; padding: 30px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); color: #000; }
 
         /* ARSIRAN MERAH TIPIS HARI LIBUR DI TABEL */
         .cell-libur { background-color: #fce4d6 !important; color: #c00000 !important; font-weight: bold; text-align: center; background-image: linear-gradient(45deg, #fce4d6 25%, transparent 25%, transparent 50%, #fce4d6 50%, #fce4d6 75%, transparent 75%, transparent); background-size: 10px 10px; }
 
-        /* STYLE STRUKTUR KOP & PENGESAHAN */
-        .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 20px; display: none; }
-        .kop-surat h2 { margin: 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px; }
-        .kop-surat p { margin: 5px 0 0 0; font-size: 0.9em; color: #333; }
-        .identitas-rekap { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; font-size: 0.95em; display: none; }
+        /* STRUKTUR IDENTITAS SEJAJAR KIRI & KANAN (PERBAIKAN UTAMA) */
+        .identitas-wrapper-utama { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px; font-size: 0.95em; line-height: 1.6; }
+        .identitas-blok-kiri { width: 48%; text-align: left; }
+        .identitas-blok-kanan { width: 48%; text-align: right; }
+        .instansi-title { font-size: 1.25em; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #2c3e50; }
+        .laporan-title { font-size: 1.25em; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #c0392b; letter-spacing: 0.5px; }
         
-        .area-ttd { width: 100%; margin-top: 30px; display: none; font-size: 0.95em; line-height: 1.5; page-break-inside: avoid; }
+        /* AREA TTG PENGESAHAN */
+        .area-ttd { width: 100%; margin-top: 30px; font-size: 0.95em; line-height: 1.5; page-break-inside: avoid; }
         .ttd-kolom { width: 40%; text-align: center; display: inline-block; vertical-align: top; }
         .ttd-space { height: 70px; }
         
-        .halaman-grafik { display: none; page-break-before: always; margin-top: 40px; text-align: center; }
-        .chart-container { width: 100%; max-width: 700px; margin: 0 auto; height: 350px; }
+        /* STRUKTUR GRAFIK */
+        .halaman-grafik { margin-top: 40px; text-align: center; border-top: 1px dashed #ccc; padding-top: 30px; page-break-before: always; }
+        .chart-container { width: 100%; max-width: 750px; margin: 20px auto; height: 350px; background: #fdfdfd; padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+
+        /* REKAP FILTER AREA */
+        .rekap-filter-area { margin-bottom: 20px; }
 
         /* STYLE MESIN PRINTING CETAK ADM DINAS A4 LANDSCAPE */
         @media print {
@@ -63,12 +69,14 @@
             .container, .toolbar, .btn, .footer, #view-absen, .rekap-filter-area, .panel-efektif { display: none !important; }
             .modal-rekap { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; overflow: visible; }
             .rekap-box { box-shadow: none; padding: 0; max-width: 100%; }
-            .kop-surat, .identitas-rekap, .area-ttd, .halaman-grafik { display: block !important; }
+            .identitas-wrapper-utama { border-bottom: 2px solid #000 !important; }
+            .instansi-title, .laporan-title { color: #000 !important; }
             table { width: 100% !important; border: 1px solid #000 !important; }
             th { background-color: #f2f2f2 !important; color: #000 !important; border: 1px solid #000 !important; font-size: 0.75em !important; padding: 5px 2px !important; }
             td { border: 1px solid #000 !important; font-size: 0.75em !important; padding: 5px 3px !important; }
             .cell-libur { background-color: #fce4d6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             tfoot tr { background-color: #f9f9f9 !important; font-weight: bold; }
+            .halaman-grafik { border-top: none !important; padding-top: 0 !important; }
             @page { size: landscape; margin: 1cm; }
         }
     </style>
@@ -103,7 +111,7 @@
                 </div>
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="btn btn-sm btn-secondary" onclick="window.location.href='index.html'">Kembali</button>
-                    <button class="btn btn-sm" style="background-color: #9b59b6; color: white;" onclick="bukaPusatRekap()"><i class="fas fa-print"></i> Pusat Rekap</button> 
+                    <button class="btn btn-sm" style="background-color: #9b59b6; color: white;" onclick="bukaPusatRekap()"><i class="fas fa-print"></i> Pusat Rekap & Grafik</button> 
                     <button class="btn btn-sm btn-success" id="btn-simpan-absen" onclick="simpanAbsensi()"><i class="fas fa-save"></i> Simpan Absensi</button>
                 </div>
             </div>
@@ -139,54 +147,54 @@
                     <button class="btn btn-sm btn-success" style="margin-top: 20px;" id="btn-proses-rekap" onclick="prosesTarikRekap()"><i class="fas fa-sync"></i> Format & Jalankan Rekap</button>
                     <div style="margin-left: auto; display: flex; gap: 10px; margin-top: 20px;">
                         <button class="btn btn-sm" style="background-color: #27ae60; color: white;" onclick="eksporExcelRekap()"><i class="fas fa-file-excel"></i> Unduh Excel</button>
-                        <button class="btn btn-sm btn-success" onclick="window.print()"><i class="fas fa-print"></i> Cetak Dokumen (A4)</button>
+                        <button class="btn btn-sm btn-primary" style="background-color: #2980b9; color: white;" onclick="window.print()"><i class="fas fa-print"></i> Cetap/Simpan PDF A4</button>
                         <button class="btn btn-sm btn-secondary" onclick="tutupPusatRekap()">Tutup</button>
                     </div>
                 </div>
 
                 <div class="panel-efektif">
-                    <strong style="color:#c0392b;"><i class="fas fa-calendar-alt"></i> Poin 4: Penentuan Hari Libur / Non-Efektif</strong>
-                    <div style="font-size:0.85em; color:#555; margin-top:3px;">Centang tanggal di bawah ini jika sekolah libur (Hari Minggu otomatis terkunci libur). Tanggal yang dicentang akan diarsir merah dan tidak masuk hitungan persentase.</div>
+                    <strong style="color:#c0392b;"><i class="fas fa-calendar-alt"></i> Penentuan Hari Libur / Non-Efektif Bulan Ini</strong>
+                    <div style="font-size:0.85em; color:#555; margin-top:3px;">Centang tanggal di bawah ini jika sekolah libur (Hari Minggu otomatis terkunci libur). Tanggal libur otomatis diarsir merah tipis diagonal.</div>
                     <div style="font-weight:bold; margin-top:8px; font-size:0.9em;" id="txt-hari-efektif">Menghitung Hari Efektif...</div>
                     <div class="grid-kalender" id="kalender-efektif-grid"></div>
                 </div>
             </div>
 
-            <div class="kop-surat">
-                <h2 id="kop-nama-sekolah">REKAPAN DATA ABSENSI SISWA</h2>
-                <p id="kop-alamat-sekolah">Sistem Informasi Manajemen Dokumen Admin Guru - 3D Creative</p>
-            </div>
-
-            <div class="identitas-rekap">
-                <div>
-                    <div>Mata Pelajaran : Umum / Wali Kelas</div>
-                    <div>Kelas : <span id="id-rekap-kelas">-</span></div>
-                    <div>Semester : <span id="id-rekap-semester">-</span></div>
+            <div class="identitas-wrapper-utama">
+                <div class="identitas-blok-kiri">
+                    <div class="instansi-title" id="kop-nama-sekolah">NAMA SEKOLAH</div>
+                    <div>NPSN : <span id="id-rekap-npsn">-</span></div>
+                    <div>Alamat : <span id="id-rekap-alamat">-</span></div>
+                    <div>Kabupaten/Kota : <span id="ttd-kabupaten">-</span></div>
+                    <div>Kepala Sekolah : <span id="id-rekap-kepsek-nama">-</span></div>
                 </div>
-                <div style="text-align: right;">
-                    <div>Bulan Periode : <span id="id-rekap-bulan">-</span></div>
+                <div class="identitas-blok-kanan">
+                    <div class="laporan-title">REKAPAN ABSENSI BULANAN</div>
                     <div>Tahun Pelajaran : <span id="id-rekap-tapel">-</span></div>
-                    <div>Jenis Guru : <span id="id-rekap-jenisguru">-</span></div>
+                    <div>Semester : <span id="id-rekap-semester">-</span></div>
+                    <div>Kelas : <span id="id-rekap-kelas">-</span></div>
+                    <div>Wali / Guru Kelas : <span id="id-rekap-guru-nama">-</span></div>
+                    <div>Periode Bulan : <span id="id-rekap-bulan">-</span></div>
                 </div>
             </div>
 
             <div style="overflow-x: auto;" id="wadah-tabel-rekap">
                 <table id="tabel-print-rekap">
-                    <thead><tr><th style="padding:25px;">Tentukan bulan periode dan konfigurasi hari efektif di atas, lalu klik tombol Generate.</th></tr></thead>
+                    <thead><tr><th style="padding:25px;">Tentukan bulan periode dan konfigurasi hari efektif di atas, lalu klik tombol "Format & Jalankan Rekap".</th></tr></thead>
                 </table>
             </div>
 
             <div class="area-ttd" id="area-ttd-lembar1">
                 <div class="ttd-kolom" style="float: left;">
                     <div>Mengetahui,</div>
-                    <div id="lbl-jabatan-kepsek">Kepala Sekolah</div>
+                    <div>Kepala Sekolah</div>
                     <div class="ttd-space"></div>
                     <div id="ttd-nama-kepsek" style="font-weight: bold; text-decoration: underline;">-</div>
                     <div>NIP. <span id="ttd-nip-kepsek">-</span></div>
                 </div>
                 <div class="ttd-kolom" style="float: right;">
-                    <div><span id="ttd-kabupaten">Kabupaten</span>, <span id="ttd-tanggal-cetak"></span></div>
-                    <div id="lbl-jabatan-guru">Guru Kelas</div>
+                    <div><span id="ttd-kabupaten-isi">Kabupaten</span>, <span id="ttd-tanggal-cetak"></span></div>
+                    <div><span id="lbl-jabatan-guru">Guru Kelas</span></div>
                     <div class="ttd-space"></div>
                     <div id="ttd-nama-guru" style="font-weight: bold; text-decoration: underline;">-</div>
                     <div>NIP. <span id="ttd-nip-guru">-</span></div>
@@ -194,32 +202,27 @@
                 <div style="clear: both;"></div>
             </div>
 
-            <div class="halaman-grafik">
-                <div class="kop-surat" style="display:block;">
-                    <h2>GRAFIK PERSENTASE ABSENSI SISWA</h2>
-                    <p id="kop-alamat-sekolah-g2">Sistem Informasi Manajemen Dokumen Admin Guru</p>
-                </div>
-                <div class="identitas-rekap" style="display:flex; margin-bottom:30px;">
-                    <div>Kelas: <span id="id-rekap-kelas-g2">-</span></div>
-                    <div>Bulan: <span id="id-rekap-bulan-g2">-</span></div>
-                    <div>Tahun Pelajaran: <span id="id-rekap-tapel-g2">-</span></div>
+            <div class="halaman-grafik" id="wadah-grafik-rekap">
+                <div class="laporan-title" style="margin-bottom: 5px;">DISTRIBUSI GRAFIK PERSENTASE KEHADIRAN KELAS</div>
+                <div style="font-size:0.9em; font-weight:bold; margin-bottom:15px; color:#555;">
+                    Kelas: <span id="id-rekap-kelas-g2">-</span> | Bulan: <span id="id-rekap-bulan-g2">-</span> | TP: <span id="id-rekap-tapel-g2">-</span>
                 </div>
                 
                 <div class="chart-container">
                     <canvas id="grafikAbsensiCanvas"></canvas>
                 </div>
 
-                <div class="area-ttd" style="display:block; margin-top:50px;">
+                <div class="area-ttd" style="margin-top:40px;">
                     <div class="ttd-kolom" style="float: left;">
                         <div>Mengetahui,</div>
-                        <div id="lbl-jabatan-kepsek-g2">Kepala Sekolah</div>
+                        <div>Kepala Sekolah</div>
                         <div class="ttd-space"></div>
                         <div id="ttd-nama-kepsek-g2" style="font-weight: bold; text-decoration: underline;">-</div>
                         <div>NIP. <span id="ttd-nip-kepsek-g2">-</span></div>
                     </div>
                     <div class="ttd-kolom" style="float: right;">
-                        <div><span id="ttd-kabupaten-g2">Kabupaten</span>, <span id="ttd-tanggal-cetak-g2"></span></div>
-                        <div id="lbl-jabatan-guru-g2">Guru Kelas</div>
+                        <div><span id="ttd-kabupaten-isi-g2">Kabupaten</span>, <span id="ttd-tanggal-cetak-g2"></span></div>
+                        <div><span id="lbl-jabatan-guru-g2">Guru Kelas</span></div>
                         <div class="ttd-space"></div>
                         <div id="ttd-nama-guru-g2" style="font-weight: bold; text-decoration: underline;">-</div>
                         <div>NIP. <span id="ttd-nip-guru-g2">-</span></div>
@@ -238,7 +241,7 @@
         let userAktif = null;
         let dataAbsenSaatIni = [];
         let dataSekolahCache = null;
-        let objekChart = null; // Menyimpan instance ChartJS agar bisa direset/destroy bersih
+        let objekChart = null; 
         
         window.onload = () => {
             userAktif = JSON.parse(localStorage.getItem('userAdminGuru'));
@@ -266,7 +269,6 @@
             }).then(r => r.json()).then(res => {
                 if(res.status === 'success' && res.data) {
                     dataSekolahCache = JSON.parse(res.data);
-                    // Poin Perbaikan 1: Pasang identitas sekolah ke elemen cetak lembar 1 dan lembar 2
                     aktualisasikanIdentitasSekolahDOM();
                 }
             });
@@ -276,27 +278,33 @@
             if (!dataSekolahCache) return;
             const ds = dataSekolahCache;
             
-            // Pengisian Lembar 1 (Tabel)
-            document.getElementById('kop-nama-sekolah').innerText = `REKAPAN DATA ABSENSI SISWA ${ds.nama_sekolah.toUpperCase()}`;
-            document.getElementById('kop-alamat-sekolah').innerText = `NPSN: ${ds.npsn || '-'} | Alamat: ${ds.alamat || '-'}`;
+            // Kolom Kiri
+            document.getElementById('kop-nama-sekolah').innerText = ds.nama_sekolah || 'NAMA SEKOLAH';
+            document.getElementById('id-rekap-npsn').innerText = ds.npsn || '-';
+            document.getElementById('id-rekap-alamat').innerText = ds.alamat || '-';
+            document.getElementById('id-rekap-kepsek-nama').innerText = ds.kepala_sekolah || '-';
+            document.getElementById('ttd-kabupaten').innerText = ds.kabupaten || '-';
+
+            // Kolom Kanan
             document.getElementById('id-rekap-semester').innerText = ds.semester || '-';
             document.getElementById('id-rekap-tapel').innerText = ds.tahun_pelajaran || '-';
-            document.getElementById('id-rekap-jenisguru').innerText = ds.jenis_guru || 'Guru Kelas';
+            document.getElementById('id-rekap-guru-nama').innerText = ds.nama_guru || '-';
+            
+            // Bagian Pengesahan Bawah Lembar 1
             document.getElementById('ttd-nama-kepsek').innerText = ds.kepala_sekolah || '-';
             document.getElementById('ttd-nip-kepsek').innerText = ds.nip_kepsek || '-';
             document.getElementById('ttd-nama-guru').innerText = ds.nama_guru || '-';
             document.getElementById('ttd-nip-guru').innerText = ds.nip_guru || '-';
-            document.getElementById('ttd-kabupaten').innerText = ds.kabupaten || 'Kabupaten';
+            document.getElementById('ttd-kabupaten-isi').innerText = ds.kabupaten || 'Kabupaten';
             document.getElementById('lbl-jabatan-guru').innerText = ds.jenis_guru || 'Guru Kelas';
 
-            // Pengisian Lembar 2 (Grafik)
-            document.getElementById('kop-alamat-sekolah-g2').innerText = `NPSN: ${ds.npsn || '-'} | ${ds.nama_sekolah}`;
+            // Bagian Pengesahan Bawah Lembar 2 (Grafik)
             document.getElementById('id-rekap-tapel-g2').innerText = ds.tahun_pelajaran || '-';
             document.getElementById('ttd-nama-kepsek-g2').innerText = ds.kepala_sekolah || '-';
             document.getElementById('ttd-nip-kepsek-g2').innerText = ds.nip_kepsek || '-';
             document.getElementById('ttd-nama-guru-g2').innerText = ds.nama_guru || '-';
             document.getElementById('ttd-nip-guru-g2').innerText = ds.nip_guru || '-';
-            document.getElementById('ttd-kabupaten-g2').innerText = ds.kabupaten || 'Kabupaten';
+            document.getElementById('ttd-kabupaten-isi-g2').innerText = ds.kabupaten || 'Kabupaten';
             document.getElementById('lbl-jabatan-guru-g2').innerText = ds.jenis_guru || 'Guru Kelas';
 
             const opsi = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -397,7 +405,7 @@
             });
         }
 
-        // ======================= MODUL INSTRUMEN HARI EFEKTIF (Poin 4) =======================
+        // ======================= MODUL INSTRUMEN HARI EFEKTIF =======================
         function renderSistemHariEfektif() {
             const bulan = document.getElementById('rekap-bulan').value;
             if(!bulan) return;
@@ -409,7 +417,6 @@
             const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
             for (let d = 1; d <= totalDays; d++) {
-                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const dayOfWeek = new Date(year, month - 1, d).getDay();
                 const isSunday = dayOfWeek === 0;
 
@@ -443,7 +450,6 @@
             return efektif;
         }
 
-        // ======================= GENERATE REKAP BULANAN & TABEL MATRIKS (Poin 2 & 3) =======================
         function bukaPusatRekap() {
             const kelas = document.getElementById('select-kelas').value;
             if(!kelas) return alert('Pilih kelas terlebih dahulu!');
@@ -455,6 +461,7 @@
 
         function tutupPusatRekap() { document.getElementById('modal-rekap').classList.remove('active'); }
 
+        // ======================= GENERATE REKAP BULANAN & TABEL MATRIKS =======================
         function prosesTarikRekap() {
             const kelas = document.getElementById('select-kelas').value;
             const bulan = document.getElementById('rekap-bulan').value;
@@ -465,7 +472,6 @@
             const [year, month] = bulan.split('-').map(Number);
             const totalDays = new Date(year, month, 0).getDate();
             
-            // Koleksi data tanggal libur dari instrumen Poin 4
             const daftarTglLibur = [];
             document.querySelectorAll('.chk-libur').forEach(c => {
                 if(c.checked) daftarTglLibur.push(parseInt(c.getAttribute('data-tgl')));
@@ -488,13 +494,16 @@
                     const txtBulan = konversiBulanTeks(bulan);
                     document.getElementById('id-rekap-kelas').innerText = kelas;
                     document.getElementById('id-rekap-bulan').innerText = txtBulan;
+                    
                     document.getElementById('id-rekap-kelas-g2').innerText = kelas;
                     document.getElementById('id-rekap-bulan-g2').innerText = txtBulan;
+
+                    // Pastikan identitas terisi ulang dari cache
+                    aktualisasikanIdentitasSekolahDOM();
 
                     const siswaArr = res.daftarSiswa;
                     const matriks = res.rekapData;
 
-                    // Buat susunan Header Tabel dinamis dari Tanggal 1 s/d Hari Terakhir Bulan
                     let html = `
                         <table id="tabel-print-rekap">
                             <thead>
@@ -522,16 +531,12 @@
                             <tbody>
                     `;
 
-                    // Variabel Giga-Akumulasi Tingkat Kelas (Untuk Poin 3)
                     let grandH = 0, grandS = 0, grandI = 0, grandA = 0;
-                    
-                    // Variabel array untuk menghitung rekap per kolom tanggal
                     let kolomH = Array(totalDays+1).fill(0);
                     let kolomS = Array(totalDays+1).fill(0);
                     let kolomI = Array(totalDays+1).fill(0);
                     let kolomA = Array(totalDays+1).fill(0);
 
-                    // Isi Baris Data Siswa
                     siswaArr.forEach((s) => {
                         let totH = 0, totS = 0, totI = 0, totA = 0;
 
@@ -549,7 +554,7 @@
                             if (isLibur) {
                                 html += `<td class="cell-libur">L</td>`;
                             } else {
-                                const status = (matriks[s.namaLengkap] && matriks[s.namaLengkap][dateStr]) ? matriks[s.namaLengkap][dateStr] : 'H'; // Default hadir jika tidak ada catatan alpha resmi
+                                const status = (matriks[s.namaLengkap] && matriks[s.namaLengkap][dateStr]) ? matriks[s.namaLengkap][dateStr] : 'H'; 
                                 
                                 if(status === 'H') { totH++; kolomH[d]++; }
                                 else if(status === 'S') { totS++; kolomS[d]++; }
@@ -565,9 +570,7 @@
                             }
                         }
 
-                        // Poin Perbaikan 2: Hitung persen kehadiran individual berdasarkan KBM Efektif
                         let persenSiswa = ((totH / hariEfektifKBM) * 100).toFixed(0);
-
                         grandH += totH; grandS += totS; grandI += totI; grandA += totA;
 
                         html += `
@@ -580,12 +583,11 @@
                         `;
                     });
 
-                    // Poin Perbaikan 3: Penyusunan FOOOTER TABEL akumulasi dan persentase makro kelas
                     const totalPotensiSiswaHari = siswaArr.length * hariEfektifKBM;
-                    const persenKelasH = ((grandH / totalPotensiSiswaHari) * 100).toFixed(1);
-                    const persenKelasS = ((grandS / totalPotensiSiswaHari) * 100).toFixed(1);
-                    const persenKelasI = ((grandI / totalPotensiSiswaHari) * 100).toFixed(1);
-                    const persenKelasA = ((grandA / totalPotensiSiswaHari) * 100).toFixed(1);
+                    const persenKelasH = totalPotensiSiswaHari > 0 ? ((grandH / totalPotensiSiswaHari) * 100).toFixed(1) : 0;
+                    const persenKelasS = totalPotensiSiswaHari > 0 ? ((grandS / totalPotensiSiswaHari) * 100).toFixed(1) : 0;
+                    const persenKelasI = totalPotensiSiswaHari > 0 ? ((grandI / totalPotensiSiswaHari) * 100).toFixed(1) : 0;
+                    const persenKelasA = totalPotensiSiswaHari > 0 ? ((grandA / totalPotensiSiswaHari) * 100).toFixed(1) : 0;
 
                     html += `
                             </tbody>
@@ -594,12 +596,11 @@
                                     <td colspan="3" style="text-align:right;">Total Akumulasi Kelas:</td>
                     `;
                     
-                    // Tampilkan ringkasan per kolom tanggal harian
                     for(let d=1; d<=totalDays; d++) {
                         if(daftarTglLibur.includes(d)) html += `<td class="cell-libur">-</td>`;
                         else {
-                            let totalKetidakHadiranSakitIzinAlphaHariItu = kolomS[d] + kolomI[d] + kolomA[d];
-                            html += `<td style="text-align:center; font-size:0.75em; color:${totalKetidakHadiranSakitIzinAlphaHariItu>0?'#e74c3c':'#27ae60'}">${totalKetidakHadiranSakitIzinAlphaHariItu}</td>`;
+                            let totalKetidakHadiran = kolomS[d] + kolomI[d] + kolomA[d];
+                            html += `<td style="text-align:center; font-size:0.75em; color:${totalKetidakHadiran>0?'#e74c3c':'#27ae60'}">${totalKetidakHadiran}</td>`;
                         }
                     }
 
@@ -624,17 +625,16 @@
                     
                     wadah.innerHTML = html;
 
-                    // Poin Perbaikan 5: Konstruksi pembuatan Grafik Batang via ChartJS
+                    // Konstruksi pembuatan Grafik Batang via ChartJS
                     bangunGrafikBatangAbsenPoin5(persenKelasH, persenKelasS, persenKelasI, persenKelasA);
                 }
             });
         }
 
-        // ======================= ENGINE GRAFIK BATANG PEMBUNUH (Poin 5) =======================
+        // ======================= ENGINE RENDERING CHART.JS =======================
         function bangunGrafikBatangAbsenPoin5(pH, pS, pI, pA) {
             const ctx = document.getElementById('grafikAbsensiCanvas').getContext('2d');
             
-            // Hancurkan grafik lama jika ada agar memori bersih tidak bertumpuk
             if (objekChart) objekChart.destroy();
 
             objekChart = new Chart(ctx, {
@@ -644,12 +644,11 @@
                     datasets: [{
                         label: 'Persentase Distribusi (%)',
                         data: [pH, pS, pI, pA],
-                        // Konsistensi warna eksklusif sesuai instruksi blueprint halaman 3
                         backgroundColor: ['#2ecc71', '#f1c40f', '#3498db', '#e74c3c'],
                         borderColor: ['#27ae60', '#f39c12', '#2980b9', '#c0392b'],
                         borderWidth: 2,
                         borderRadius: 5,
-                        barThickness: 50
+                        barThickness: 55
                     }]
                 },
                 options: {
